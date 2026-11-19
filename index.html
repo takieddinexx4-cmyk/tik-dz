@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TIK DZ — مولد مفاتيح البث المباشر</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-base: #0b0c10;
+      --bg-charcoal: #14161d;
+      --glass-surface: rgba(34, 37, 48, 0.52);
+      --glass-surface-hover: rgba(45, 49, 64, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.13);
+      --glass-highlight: rgba(255, 255, 255, 0.28);
+      --red-primary: #ff1f4b;
+      --red-deep: #b91c1c;
+      --red-glow: rgba(255, 31, 75, 0.35);
+      --text-main: #f5f7fa;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Cairo', 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(255, 31, 75, 0.18) 0%, transparent 42%),
+        radial-gradient(circle at 86% 14%, rgba(120, 125, 145, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 75% 85%, rgba(225, 29, 72, 0.14) 0%, transparent 48%),
+        linear-gradient(160deg, #0a0b0e 0%, #15171f 52%, #0d0e13 100%);
+      background-attachment: fixed;
+    }
+
+    .font-mono-code {
+      font-family: 'JetBrains Mono', 'Inter', monospace;
+      direction: ltr;
+      unicode-bidi: isolate;
+    }
+
+    .liquid-glass {
+      position: relative;
+      background: linear-gradient(
+        145deg,
+        rgba(46, 50, 63, 0.56) 0%,
+        rgba(24, 26, 34, 0.68) 55%,
+        rgba(18, 20, 26, 0.78) 100%
+      );
+      backdrop-filter: blur(28px) saturate(165%);
+      -webkit-backdrop-filter: blur(28px) saturate(165%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow:
+        0 20px 45px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+      border-radius: 26px;
+      overflow: hidden;
+    }
+
+    .liquid-glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        125deg,
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.02) 28%,
+        transparent 52%,
+        rgba(255, 31, 75, 0.04) 100%
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .liquid-glass > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .glass-inset {
+      background: rgba(12, 13, 18, 0.58);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow:
+        inset 0 2px 8px rgba(0, 0, 0, 0.45),
+        0 1px 0 rgba(255, 255, 255, 0.07);
+      border-radius: 18px;
+    }
+
+    .btn-glass {
+      position: relative;
+      background: linear-gradient(180deg, rgba(64, 68, 84, 0.65) 0%, rgba(34, 37, 46, 0.78) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .btn-glass:hover {
+      background: linear-gradient(180deg, rgba(78, 83, 102, 0.75) 0%, rgba(42, 46, 58, 0.85) 100%);
+      border-color: rgba(255, 255, 255, 0.28);
+      transform: translateY(-1px);
+    }
+
+    .btn-glass:active {
+      transform: scale(0.97);
+    }
+
+    .btn-crimson {
+      position: relative;
+      background: linear-gradient(135deg, #ff2e58 0%, #e11d48 52%, #9f1239 100%);
+      border: 1px solid rgba(255, 145, 168, 0.45);
+      box-shadow:
+        0 12px 28px rgba(255, 31, 75, 0.36),
+        inset 0 1px 1px rgba(255, 255, 255, 0.45),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.28);
+      transition: all 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+      overflow: hidden;
+    }
+
+    .btn-crimson::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -60%;
+      width: 45%;
+      height: 200%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+      transform: rotate(24deg);
+      transition: left 0.55s ease;
+    }
+
+    .btn-crimson:hover::after {
+      left: 125%;
+    }
+
+    .btn-crimson:hover {
+      box-shadow:
+        0 16px 34px rgba(255, 31, 75, 0.5),
+        inset 0 1px 1px rgba(255, 255, 255, 0.55);
+      transform: translateY(-1.5px);
+    }
+
+    .btn-crimson:active {
+      transform: scale(0.98);
+    }
+
+    .pill-option {
+      background: rgba(30, 33, 43, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      color: #cbd5e1;
+      transition: all 0.2s ease;
+    }
+
+    .pill-option:hover {
+      background: rgba(48, 52, 66, 0.75);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .pill-option.active {
+      background: linear-gradient(135deg, rgba(255, 31, 75, 0.28) 0%, rgba(159, 18, 57, 0.42) 100%);
+      border-color: rgba(255, 68, 104, 0.75);
+      color: #ffffff;
+      box-shadow:
+        0 6px 18px rgba(255, 31, 75, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    .icon-3d-badge {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(145deg, rgba(65, 70, 88, 0.8), rgba(22, 24, 32, 0.95));
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow:
+        0 10px 20px rgba(0, 0, 0, 0.45),
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.35),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.5);
+      flex-shrink: 0;
+    }
+
+    .icon-3d-badge.red {
+      background: linear-gradient(145deg, #ff3b63 0%, #c8143c 65%, #7f0d26 100%);
+      border-color: rgba(255, 165, 182, 0.45);
+      box-shadow:
+        0 10px 24px rgba(255, 31, 75, 0.38),
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.5),
+        inset 0 -3px 6px rgba(80, 0, 20, 0.5);
+    }
+
+    input[type="range"].glass-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    input[type="range"].glass-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ff476c, #d1153e);
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 4px 14px rgba(255, 31, 75, 0.6);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    input[type="range"].glass-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+    }
+
+    .ios-switch {
+      width: 50px;
+      height: 28px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.25s ease, border-color 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .ios-switch.on {
+      background: linear-gradient(135deg, #ff2e58, #be123c);
+      border-color: rgba(255, 160, 180, 0.45);
+      box-shadow: 0 0 16px rgba(255, 31, 75, 0.4);
+    }
+
+    .ios-switch::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .ios-switch.on::after {
+      transform: translateX(22px);
+    }
+
+    .ambient-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.45;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.55; }
+    }
+
+    .live-dot {
+      animation: pulseDot 1.8s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-rose-500/30 selection:text-white">
+
+  <div class="ambient-orb w-80 h-80 bg-rose-600/30 -top-24 -right-16"></div>
+  <div class="ambient-orb w-96 h-96 bg-zinc-500/20 top-1/3 -left-28"></div>
+  <div class="ambient-orb w-72 h-72 bg-red-700/25 bottom-0 right-1/4"></div>
+
+  <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
+
+    <header class="liquid-glass px-4 sm:px-6 py-3.5 mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="icon-3d-badge red">
+          <svg class="w-6 h-6 text-white drop-shadow" viewBox="0 0 24 24" fill="none">
+            <path d="M16.5 3C16.8 5.2 18.2 6.8 20.5 7.2V10.3C18.9 10.2 17.5 9.7 16.5 8.9V14.8C16.5 18.5 13.5 21 9.9 21C6.2 21 3.5 18.1 3.5 14.5C3.5 10.8 6.5 8 10.2 8C10.6 8 11 8 11.4 8.1V11.4C11 11.2 10.6 11.1 10.2 11.1C8.3 11.1 6.8 12.6 6.8 14.5C6.8 16.4 8.3 17.9 10.2 17.9C12.2 17.9 13.3 16.6 13.3 14.3V3H16.5Z" fill="url(#tiktok3d)"/>
+            <defs>
+              <linearGradient id="tiktok3d" x1="3.5" y1="3" x2="20.5" y2="21" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#FFFFFF"/>
+                <stop offset="1" stop-color="#FFD1DC"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">TIK <span class="text-rose-500">DZ</span></h1>
+            <span class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-white/10 border border-white/15 text-zinc-200">LIVE STUDIO</span>
+          </div>
+          <p class="text-xs text-zinc-400">مولد مفاتيح البث المباشر لـ OBS وبرامج البث</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <button id="btnOpenDevSettings" type="button" class="btn-glass px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-zinc-200 flex items-center gap-2">
+          <svg class="w-4 h-4 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+          </svg>
+          <span>إعدادات OAuth</span>
+        </button>
+
+        <div id="authArea"></div>
+      </div>
+    </header>
+
+    <div id="modeBanner" class="liquid-glass px-4 py-3 mb-6 border-r-4 border-r-rose-500 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
+      <div class="flex items-center gap-2.5 text-zinc-200">
+        <span class="w-2.5 h-2.5 rounded-full bg-rose-500 live-dot flex-shrink-0"></span>
+        <span id="modeBannerText">وضع المعاينة التفاعلية (Demo OAuth): لتفعيل الربط الحقيقي، أضف بيانات تطبيقك في <strong class="text-white">إعدادات OAuth</strong> مع خادم وسيط (Backend) وصلاحيات TikTok LIVE المعتمدة.</span>
+      </div>
+      <span id="connectionBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-zinc-800/90 border border-white/10 text-zinc-300 self-start sm:self-auto">غير متصل</span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <div class="lg:col-span-7 space-y-6">
+
+        <section class="liquid-glass p-5 sm:p-6">
+          <div class="flex items-center justify-between gap-3 mb-5">
+            <div class="flex items-center gap-3.5">
+              <div class="icon-3d-badge red">
+                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 7a4 4 0 1 0-3.87 5L5 18.12V21h2.88l1.62-1.62v-1.88h1.88l1.25-1.25A4 4 0 0 0 15 7Z" fill="url(#keyGrad)" stroke="rgba(255,255,255,0.85)" stroke-width="1.3" stroke-linejoin="round"/>
+                  <circle cx="15.5" cy="6.5" r="1.3" fill="#7f0d26"/>
+                  <defs>
+                    <linearGradient id="keyGrad" x1="5" y1="3" x2="19" y2="21" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#FFFFFF"/>
+                      <stop offset="1" stop-color="#FDA4AF"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-extrabold text-white">توليد مفتاح البث المباشر (RTMP)</h2>
+                <p class="text-xs text-zinc-400">انسخ الرابط والمفتاح مباشرة إلى OBS Studio أو Prism Live</p>
+              </div>
+            </div>
+            <span id="keyStatusPill" class="px-3 py-1 rounded-full text-xs font-bold bg-zinc-800/80 border border-white/10 text-zinc-400">بانتظار التوليد</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+            <button id="btnGenerateKey" type="button" class="btn-crimson py-3.5 px-5 rounded-2xl font-bold text-white flex items-center justify-center gap-2.5 text-sm sm:text-base">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>إنشاء مفتاح بث مباشر</span>
+            </button>
+
+            <button id="btnRevokeKey" type="button" class="btn-glass py-3.5 px-5 rounded-2xl font-bold text-zinc-200 flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-45 disabled:cursor-not-allowed">
+              <svg class="w-5 h-5 text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+              </svg>
+              <span>تحديث / تدوير المفتاح</span>
+            </button>
+          </div>
+
+          <div class="space-y-3.5">
+            <div class="glass-inset p-3.5">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-zinc-400">خادم البث (Server RTMP URL)</span>
+                <button id="btnCopyUrl" type="button" class="text-xs font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 transition">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                  <span>نسخ الرابط</span>
+                </button>
+              </div>
+              <div id="rtmpUrlDisplay" class="font-mono-code text-xs sm:text-sm text-zinc-200 truncate select-all">
+                rtmp://push.tiktok.com/live/ — اضغط على إنشاء مفتاح
+              </div>
+            </div>
+
+            <div class="glass-inset p-3.5">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-zinc-400">مفتاح البث (Stream Key)</span>
+                <div class="flex items-center gap-3">
+                  <button id="btnToggleKeyMask" type="button" class="text-xs font-semibold text-zinc-300 hover:text-white transition">
+                    إظهار
+                  </button>
+                  <button id="btnCopyKey" type="button" class="text-xs font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 transition">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                    <span>نسخ المفتاح</span>
+                  </button>
+                </div>
+              </div>
+              <div id="streamKeyDisplay" class="font-mono-code text-xs sm:text-sm text-rose-300 truncate select-all">
+                ••••-••••-••••-••••
+              </div>
+            </div>
+          </div>
+
+          <div id="dualStreamBox" class="hidden mt-3.5 glass-inset p-3.5 border border-rose-500/30">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-bold text-rose-300">مفتاح البث المزدوج (أفقي 16:9 إضافي لـ OBS)</span>
+              <button id="btnCopyDualKey" type="button" class="text-xs font-bold text-rose-400 hover:text-rose-300">نسخ</button>
+            </div>
+            <div id="dualKeyDisplay" class="font-mono-code text-xs text-zinc-300 truncate"></div>
+          </div>
+        </section>
+
+        <section class="liquid-glass p-5 sm:p-6">
+          <div class="flex items-center gap-3.5 mb-5">
+            <div class="icon-3d-badge">
+              <svg class="w-6 h-6 text-rose-400" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="5" width="18" height="14" rx="4" fill="url(#camGrad)" stroke="rgba(255,255,255,0.6)" stroke-width="1.3"/>
+                <circle cx="12" cy="12" r="3.2" fill="#0b0c10" stroke="#ff2e58" stroke-width="1.5"/>
+                <defs>
+                  <linearGradient id="camGrad" x1="3" y1="5" x2="21" y2="19" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#4b5563"/>
+                    <stop offset="1" stop-color="#1f2937"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-lg font-extrabold text-white">تفاصيل البث المباشر</h2>
+              <p class="text-xs text-zinc-400">تخصيص عنوان الغرفة والتصنيف وخيارات الخصوصية</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="streamTitle" class="block text-xs font-bold text-zinc-300 mb-1.5">عنوان البث</label>
+              <input id="streamTitle" type="text" value="بث مباشر احترافي من OBS — TIK DZ 🔥" class="w-full glass-inset px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-rose-500/70" />
+            </div>
+
+            <div>
+              <label for="streamCategory" class="block text-xs font-bold text-zinc-300 mb-1.5">تصنيف البث</label>
+              <select id="streamCategory" class="w-full glass-inset px-3.5 py-2.5 text-sm text-white bg-zinc-900 focus:outline-none focus:border-rose-500/70">
+                <option value="gaming">🎮 ألعاب الفيديو (Gaming)</option>
+                <option value="chat">💬 دردشة وتفاعل (Just Chatting)</option>
+                <option value="tech">💻 تقنية وبرمجة (Tech)</option>
+                <option value="music">🎵 موسيقى وفن (Music)</option>
+                <option value="sports">⚽ رياضة (Sports)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+            <div class="glass-inset p-3 flex items-center justify-between gap-2">
+              <div>
+                <div class="text-xs font-bold text-white">تأخير منخفض</div>
+                <div class="text-[11px] text-zinc-400">Low Latency</div>
+              </div>
+              <button type="button" id="toggleLowLatency" class="ios-switch on" aria-label="تأخير منخفض"></button>
+            </div>
+
+            <div class="glass-inset p-3 flex items-center justify-between gap-2">
+              <div>
+                <div class="text-xs font-bold text-white">بث مزدوج</div>
+                <div class="text-[11px] text-zinc-400">Dual Canvas</div>
+              </div>
+              <button type="button" id="toggleDualCanvas" class="ios-switch" aria-label="بث مزدوج"></button>
+            </div>
+
+            <div class="glass-inset p-3 flex items-center justify-between gap-2">
+              <div>
+                <div class="text-xs font-bold text-white">حفظ الإعادة</div>
+                <div class="text-[11px] text-zinc-400">Auto Replay</div>
+              </div>
+              <button type="button" id="toggleReplay" class="ios-switch on" aria-label="حفظ الإعادة"></button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <div class="lg:col-span-5 space-y-6">
+
+        <section class="liquid-glass p-5 sm:p-6">
+          <div class="flex items-center gap-3.5 mb-5">
+            <div class="icon-3d-badge red">
+              <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
+                <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6Z" fill="url(#screenGrad)" stroke="rgba(255,255,255,0.8)" stroke-width="1.3"/>
+                <path d="M8 20h8M12 16v4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+                <defs>
+                  <linearGradient id="screenGrad" x1="4" y1="4" x2="20" y2="16" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#FFFFFF" stop-opacity="0.9"/>
+                    <stop offset="1" stop-color="#FDA4AF" stop-opacity="0.7"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-lg font-extrabold text-white">الجودة ومعدل الإطارات (FPS)</h2>
+              <p class="text-xs text-zinc-400">تحكم دقيق في الدقة والنعومة ومعدل البت</p>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <span class="block text-xs font-bold text-zinc-300 mb-2">اتجاه البث (Aspect Ratio)</span>
+            <div class="grid grid-cols-2 gap-2.5">
+              <button type="button" data-orient="portrait" class="orient-btn pill-option active py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                <span>📱 عمودي 9:16 (تيك توك)</span>
+              </button>
+              <button type="button" data-orient="landscape" class="orient-btn pill-option py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                <span>🖥️ أفقي 16:9 (ألعاب)</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <span class="block text-xs font-bold text-zinc-300 mb-2">دقة البث (Resolution)</span>
+            <div class="grid grid-cols-4 gap-2">
+              <button type="button" data-res="720p" class="res-btn pill-option py-2 rounded-xl text-xs font-bold">720p</button>
+              <button type="button" data-res="1080p" class="res-btn pill-option active py-2 rounded-xl text-xs font-bold">1080p</button>
+              <button type="button" data-res="1440p" class="res-btn pill-option py-2 rounded-xl text-xs font-bold">2K</button>
+              <button type="button" data-res="2160p" class="res-btn pill-option py-2 rounded-xl text-xs font-bold">4K</button>
+            </div>
+          </div>
+
+          <div class="mb-5">
+            <span class="block text-xs font-bold text-zinc-300 mb-2">معدل الإطارات (Frame Rate)</span>
+            <div class="grid grid-cols-4 gap-2">
+              <button type="button" data-fps="30" class="fps-btn pill-option py-2 rounded-xl text-xs font-bold">30 FPS</button>
+              <button type="button" data-fps="60" class="fps-btn pill-option active py-2 rounded-xl text-xs font-bold">60 FPS</button>
+              <button type="button" data-fps="90" class="fps-btn pill-option py-2 rounded-xl text-xs font-bold">90 FPS</button>
+              <button type="button" data-fps="120" class="fps-btn pill-option py-2 rounded-xl text-xs font-bold">120 FPS</button>
+            </div>
+          </div>
+
+          <div class="glass-inset p-4 mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-zinc-300">معدل البت (Video Bitrate)</span>
+              <span id="bitrateLabel" class="font-mono-code text-sm font-bold text-rose-400">6000 kbps</span>
+            </div>
+            <input id="bitrateSlider" type="range" min="1500" max="15000" step="250" value="6000" class="glass-slider" />
+            <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2">
+              <span>1500 kbps</span>
+              <button id="btnAutoBitrate" type="button" class="text-rose-400 hover:text-rose-300 font-bold">تعيين تلقائي مناسب</button>
+              <span>15000 kbps</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="encoderSelect" class="block text-xs font-bold text-zinc-300 mb-1.5">المُرمّز (Encoder)</label>
+              <select id="encoderSelect" class="w-full glass-inset px-3 py-2 text-xs text-white bg-zinc-900 focus:outline-none focus:border-rose-500/70">
+                <option value="H.264 NVENC">H.264 (NVENC / Hardware)</option>
+                <option value="H.265 HEVC">H.265 (HEVC)</option>
+                <option value="x264">x264 (CPU)</option>
+                <option value="AV1">AV1 (تجريبي)</option>
+              </select>
+            </div>
+            <div>
+              <label for="audioBitrateSelect" class="block text-xs font-bold text-zinc-300 mb-1.5">جودة الصوت</label>
+              <select id="audioBitrateSelect" class="w-full glass-inset px-3 py-2 text-xs text-white bg-zinc-900 focus:outline-none focus:border-rose-500/70">
+                <option value="128">128 kbps AAC</option>
+                <option value="192" selected>192 kbps AAC</option>
+                <option value="320">320 kbps AAC</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="liquid-glass p-5 sm:p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="icon-3d-badge">
+                <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-base font-extrabold text-white">ملخص إعدادات OBS</h3>
+                <p class="text-[11px] text-zinc-400">جاهز للتطبيق في برنامج البث</p>
+              </div>
+            </div>
+            <button id="btnExportObsJson" type="button" class="btn-glass px-3 py-1.5 rounded-xl text-xs font-bold text-white">
+              تصدير JSON
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5 text-xs">
+            <div class="glass-inset p-3">
+              <div class="text-zinc-400 mb-0.5">الأبعاد الفعلية</div>
+              <div id="summaryDimensions" class="font-mono-code font-bold text-white">1080 × 1920</div>
+            </div>
+            <div class="glass-inset p-3">
+              <div class="text-zinc-400 mb-0.5">معدل الإطارات</div>
+              <div id="summaryFps" class="font-mono-code font-bold text-rose-400">60 FPS</div>
+            </div>
+            <div class="glass-inset p-3">
+              <div class="text-zinc-400 mb-0.5">الاستهلاك التقريبي للإنترنت</div>
+              <div id="summaryUpload" class="font-mono-code font-bold text-emerald-400">~6.2 Mbps</div>
+            </div>
+            <div class="glass-inset p-3">
+              <div class="text-zinc-400 mb-0.5">Keyframe Interval</div>
+              <div class="font-mono-code font-bold text-white">2 Seconds</div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="oauthModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+    <div class="liquid-glass w-full max-w-md p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="icon-3d-badge red">
+            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16.5 3C16.8 5.2 18.2 6.8 20.5 7.2V10.3C18.9 10.2 17.5 9.7 16.5 8.9V14.8C16.5 18.5 13.5 21 9.9 21C6.2 21 3.5 18.1 3.5 14.5C3.5 10.8 6.5 8 10.2 8C10.6 8 11 8 11.4 8.1V11.4C11 11.2 10.6 11.1 10.2 11.1C8.3 11.1 6.8 12.6 6.8 14.5C6.8 16.4 8.3 17.9 10.2 17.9C12.2 17.9 13.3 16.6 13.3 14.3V3H16.5Z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-white">تفويض حساب تيك توك (OAuth 2.0)</h3>
+            <p class="text-xs text-zinc-400">تسجيل دخول آمن بدون كلمة مرور</p>
+          </div>
+        </div>
+        <button id="btnCloseOauthModal" type="button" class="text-zinc-400 hover:text-white text-lg font-bold px-2">✕</button>
+      </div>
+
+      <div class="glass-inset p-4 mb-4 space-y-2 text-xs text-zinc-300">
+        <div class="font-bold text-white mb-1">الصلاحيات المطلوبة:</div>
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-400">✓</span>
+          <span>قراءة معلومات الملف الشخصي الأساسية (<span class="font-mono-code text-zinc-200">user.info.basic</span>)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-amber-400">★</span>
+          <span>إدارة جلسات البث المباشر (تتطلب اعتماد TikTok Partner / Backend)</span>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label for="simUsername" class="block text-xs font-bold text-zinc-300 mb-1.5">اسم المستخدم للمعاينة (أو استخدم الربط الحقيقي بالأسفل)</label>
+        <input id="simUsername" type="text" value="@tik_dz_creator" class="w-full glass-inset px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-rose-500/70" />
+      </div>
+
+      <div class="flex flex-col gap-2.5">
+        <button id="btnConfirmSimOauth" type="button" class="btn-crimson py-3 rounded-xl text-sm font-bold text-white">
+          منح الصلاحية وتسجيل الدخول (معاينة الواجهة)
+        </button>
+        <button id="btnRealTikTokOauth" type="button" class="btn-glass py-2.5 rounded-xl text-xs font-bold text-zinc-200">
+          فتح بوابة TikTok OAuth الحقيقية (يتطلب Client Key)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="devModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+    <div class="liquid-glass w-full max-w-lg p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-extrabold text-white">إعدادات المطور — ربط TikTok OAuth الحقيقي</h3>
+        <button id="btnCloseDevModal" type="button" class="text-zinc-400 hover:text-white text-lg font-bold px-2">✕</button>
+      </div>
+
+      <p class="text-xs text-zinc-300 mb-4 leading-relaxed">
+        لتشغيل تسجيل الدخول الحقيقي عبر خوادم تيك توك، أنشئ تطبيقاً في بوابة المطورين (<span class="font-mono-code text-rose-300">developers.tiktok.com</span>)، وضع <span class="font-mono-code">Client Key</span> ورابط الخادم الوسيط (Backend) لتبادل رمز التفويض.
+      </p>
+
+      <div class="space-y-3 mb-5">
+        <div>
+          <label for="devClientKey" class="block text-xs font-bold text-zinc-300 mb-1">TikTok Client Key</label>
+          <input id="devClientKey" type="text" placeholder="مثال: aw1234567890abcd" class="w-full glass-inset px-3.5 py-2 text-xs font-mono-code text-white focus:outline-none focus:border-rose-500/70" />
+        </div>
+        <div>
+          <label for="devRedirectUri" class="block text-xs font-bold text-zinc-300 mb-1">Redirect URI</label>
+          <input id="devRedirectUri" type="url" placeholder="https://your-domain.com/auth/tiktok/callback" class="w-full glass-inset px-3.5 py-2 text-xs font-mono-code text-white focus:outline-none focus:border-rose-500/70" />
+        </div>
+        <div>
+          <label for="devBackendEndpoint" class="block text-xs font-bold text-zinc-300 mb-1">Backend Token/Stream Endpoint</label>
+          <input id="devBackendEndpoint" type="url" placeholder="https://api.your-domain.com/tiktok/stream-key" class="w-full glass-inset px-3.5 py-2 text-xs font-mono-code text-white focus:outline-none focus:border-rose-500/70" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5">
+        <button id="btnCancelDev" type="button" class="btn-glass px-4 py-2 rounded-xl text-xs font-bold text-zinc-300">إلغاء</button>
+        <button id="btnSaveDev" type="button" class="btn-crimson px-5 py-2 rounded-xl text-xs font-bold text-white">حفظ الإعدادات</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden px-5 py-3 rounded-2xl liquid-glass border border-rose-500/40 text-xs sm:text-sm font-bold text-white shadow-2xl">
+  </div>
+
+  <script>
+    (function () {
+      const state = {
+        isAuthenticated: false,
+        username: '',
+        keyGenerated: false,
+        keyMasked: true,
+        rtmpUrl: '',
+        streamKey: '',
+        dualKey: '',
+        orient: 'portrait',
+        res: '1080p',
+        fps: 60,
+        bitrate: 6000,
+        encoder: 'H.264 NVENC',
+        audioBitrate: 192,
+        lowLatency: true,
+        dualCanvas: false,
+        autoReplay: true,
+        devConfig: {
+          clientKey: '',
+          redirectUri: '',
+          backendEndpoint: ''
+        }
+      };
+
+      try {
+        const saved = localStorage.getItem('tikdz_dev_config');
+        if (saved) {
+          state.devConfig = JSON.parse(saved);
+        }
+      } catch (e) {}
+
+      const authArea = document.getElementById('authArea');
+      const connectionBadge = document.getElementById('connectionBadge');
+      const keyStatusPill = document.getElementById('keyStatusPill');
+      const rtmpUrlDisplay = document.getElementById('rtmpUrlDisplay');
+      const streamKeyDisplay = document.getElementById('streamKeyDisplay');
+      const btnToggleKeyMask = document.getElementById('btnToggleKeyMask');
+      const btnRevokeKey = document.getElementById('btnRevokeKey');
+      const dualStreamBox = document.getElementById('dualStreamBox');
+      const dualKeyDisplay = document.getElementById('dualKeyDisplay');
+      const bitrateSlider = document.getElementById('bitrateSlider');
+      const bitrateLabel = document.getElementById('bitrateLabel');
+      const summaryDimensions = document.getElementById('summaryDimensions');
+      const summaryFps = document.getElementById('summaryFps');
+      const summaryUpload = document.getElementById('summaryUpload');
+      const toastEl = document.getElementById('toast');
+
+      const oauthModal = document.getElementById('oauthModal');
+      const devModal = document.getElementById('devModal');
+
+      let toastTimer = null;
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.remove('hidden');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toastEl.classList.add('hidden');
+        }, 2800);
+      }
+
+      function copyText(text, label) {
+        if (!text) {
+          showToast('لا يوجد نص لنسخه حالياً');
+          return;
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => {
+            showToast('تم نسخ ' + label + ' بنجاح');
+          }).catch(() => fallbackCopy(text, label));
+        } else {
+          fallbackCopy(text, label);
+        }
+      }
+
+      function fallbackCopy(text, label) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast('تم نسخ ' + label + ' بنجاح');
+        } catch (e) {
+          showToast('تعذر النسخ التلقائي');
+        }
+        document.body.removeChild(ta);
+      }
+
+      function randomToken(len) {
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let out = '';
+        for (let i = 0; i < len; i++) {
+          out += chars[Math.floor(Math.random() * chars.length)];
+        }
+        return out;
+      }
+
+      function generateStreamCredentials() {
+        const sessionId = randomToken(10);
+        const secretPart = randomToken(16);
+        state.rtmpUrl = 'rtmp://push-rtmp-f5.tiktok.com/live/';
+        state.streamKey = 'stream-' + sessionId + '?k=' + secretPart + '&t=' + Date.now().toString(36);
+        state.dualKey = 'stream-dual-' + randomToken(8) + '?k=' + randomToken(12);
+        state.keyGenerated = true;
+        renderKeySection();
+      }
+
+      function renderAuth() {
+        if (!state.isAuthenticated) {
+          authArea.innerHTML = `
+            <button id="btnLoginTikTok" type="button" class="btn-crimson px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16.5 3C16.8 5.2 18.2 6.8 20.5 7.2V10.3C18.9 10.2 17.5 9.7 16.5 8.9V14.8C16.5 18.5 13.5 21 9.9 21C6.2 21 3.5 18.1 3.5 14.5C3.5 10.8 6.5 8 10.2 8C10.6 8 11 8 11.4 8.1V11.4C11 11.2 10.6 11.1 10.2 11.1C8.3 11.1 6.8 12.6 6.8 14.5C6.8 16.4 8.3 17.9 10.2 17.9C12.2 17.9 13.3 16.6 13.3 14.3V3H16.5Z"/>
+              </svg>
+              <span>تسجيل الدخول بواسطة تيك توك</span>
+            </button>
+          `;
+          document.getElementById('btnLoginTikTok').addEventListener('click', () => {
+            oauthModal.classList.remove('hidden');
+            oauthModal.classList.add('flex');
+          });
+          connectionBadge.textContent = 'غير متصل';
+          connectionBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-zinc-800/90 border border-white/10 text-zinc-300 self-start sm:self-auto';
+        } else {
+          authArea.innerHTML = `
+            <div class="flex items-center gap-2">
+              <div class="glass-inset px-3 py-1.5 rounded-xl flex items-center gap-2 text-xs font-bold text-white">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span class="font-mono-code">${state.username}</span>
+              </div>
+              <button id="btnLogout" type="button" class="btn-glass px-3 py-1.5 rounded-xl text-xs font-bold text-zinc-300 hover:text-white">خروج</button>
+            </div>
+          `;
+          document.getElementById('btnLogout').addEventListener('click', () => {
+            state.isAuthenticated = false;
+            state.username = '';
+            state.keyGenerated = false;
+            state.rtmpUrl = '';
+            state.streamKey = '';
+            renderAuth();
+            renderKeySection();
+            showToast('تم تسجيل الخروج من الحساب');
+          });
+          connectionBadge.textContent = 'متصل (معاينة OAuth)';
+          connectionBadge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 self-start sm:self-auto';
+        }
+      }
+
+      function renderKeySection() {
+        if (!state.keyGenerated) {
+          keyStatusPill.textContent = 'بانتظار التوليد';
+          keyStatusPill.className = 'px-3 py-1 rounded-full text-xs font-bold bg-zinc-800/80 border border-white/10 text-zinc-400';
+          rtmpUrlDisplay.textContent = 'rtmp://push.tiktok.com/live/ — اضغط على إنشاء مفتاح';
+          streamKeyDisplay.textContent = '••••-••••-••••-••••';
+          btnRevokeKey.disabled = true;
+          dualStreamBox.classList.add('hidden');
+        } else {
+          keyStatusPill.textContent = 'جاهز لـ OBS';
+          keyStatusPill.className = 'px-3 py-1 rounded-full text-xs font-bold bg-rose-500/20 border border-rose-400/40 text-rose-300';
+          rtmpUrlDisplay.textContent = state.rtmpUrl;
+          streamKeyDisplay.textContent = state.keyMasked
+            ? state.streamKey.slice(0, 10) + '••••••••••••••••••••'
+            : state.streamKey;
+          btnToggleKeyMask.textContent = state.keyMasked ? 'إظهار' : 'إخفاء';
+          btnRevokeKey.disabled = false;
+
+          if (state.dualCanvas) {
+            dualStreamBox.classList.remove('hidden');
+            dualKeyDisplay.textContent = state.keyMasked ? state.dualKey.slice(0, 12) + '••••••••••' : state.dualKey;
+          } else {
+            dualStreamBox.classList.add('hidden');
+          }
+        }
+      }
+
+      function renderSummary() {
+        const resMap = {
+          '720p': [720, 1280],
+          '1080p': [1080, 1920],
+          '1440p': [1440, 2560],
+          '2160p': [2160, 3840]
+        };
+        const [shortSide, longSide] = resMap[state.res] || [1080, 1920];
+        const w = state.orient === 'portrait' ? shortSide : longSide;
+        const h = state.orient === 'portrait' ? longSide : shortSide;
+
+        summaryDimensions.textContent = w + ' × ' + h;
+        summaryFps.textContent = state.fps + ' FPS';
+        bitrateLabel.textContent = state.bitrate + ' kbps';
+
+        const totalMbps = ((state.bitrate + Number(state.audioBitrate)) / 1000).toFixed(1);
+        summaryUpload.textContent = '~' + totalMbps + ' Mbps';
+      }
+
+      function calculateRecommendedBitrate() {
+        const base = { '720p': 3500, '1080p': 6000, '1440p': 9500, '2160p': 13500 }[state.res] || 6000;
+        const fpsFactor = state.fps >= 90 ? 1.25 : state.fps >= 60 ? 1.0 : 0.75;
+        return Math.min(15000, Math.round((base * fpsFactor) / 250) * 250);
+      }
+
+      document.getElementById('btnGenerateKey').addEventListener('click', () => {
+        if (!state.isAuthenticated) {
+          oauthModal.classList.remove('hidden');
+          oauthModal.classList.add('flex');
+          showToast('يرجى تفويض حساب تيك توك أولاً');
+          return;
+        }
+        generateStreamCredentials();
+        showToast('تم إنشاء مفتاح البث المباشر بنجاح');
+      });
+
+      btnRevokeKey.addEventListener('click', () => {
+        if (!state.keyGenerated) return;
+        generateStreamCredentials();
+        showToast('تم تدوير مفتاح البث وإصدار مفتاح جديد');
+      });
+
+      btnToggleKeyMask.addEventListener('click', () => {
+        if (!state.keyGenerated) return;
+        state.keyMasked = !state.keyMasked;
+        renderKeySection();
+      });
+
+      document.getElementById('btnCopyUrl').addEventListener('click', () => {
+        if (!state.keyGenerated) {
+          showToast('أنشئ المفتاح أولاً');
+          return;
+        }
+        copyText(state.rtmpUrl, 'رابط الخادم');
+      });
+
+      document.getElementById('btnCopyKey').addEventListener('click', () => {
+        if (!state.keyGenerated) {
+          showToast('أنشئ المفتاح أولاً');
+          return;
+        }
+        copyText(state.streamKey, 'مفتاح البث');
+      });
+
+      document.getElementById('btnCopyDualKey').addEventListener('click', () => {
+        if (!state.keyGenerated) return;
+        copyText(state.dualKey, 'المفتاح المزدوج');
+      });
+
+      document.querySelectorAll('.orient-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.orient-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.orient = btn.dataset.orient;
+          renderSummary();
+        });
+      });
+
+      document.querySelectorAll('.res-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.res-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.res = btn.dataset.res;
+          renderSummary();
+        });
+      });
+
+      document.querySelectorAll('.fps-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.fps-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.fps = Number(btn.dataset.fps);
+          renderSummary();
+        });
+      });
+
+      bitrateSlider.addEventListener('input', (e) => {
+        state.bitrate = Number(e.target.value);
+        renderSummary();
+      });
+
+      document.getElementById('btnAutoBitrate').addEventListener('click', () => {
+        const rec = calculateRecommendedBitrate();
+        state.bitrate = rec;
+        bitrateSlider.value = rec;
+        renderSummary();
+        showToast('تم ضبط البت تلقائياً على ' + rec + ' kbps');
+      });
+
+      document.getElementById('encoderSelect').addEventListener('change', (e) => {
+        state.encoder = e.target.value;
+      });
+
+      document.getElementById('audioBitrateSelect').addEventListener('change', (e) => {
+        state.audioBitrate = Number(e.target.value);
+        renderSummary();
+      });
+
+      function bindSwitch(id, key) {
+        const el = document.getElementById(id);
+        el.addEventListener('click', () => {
+          state[key] = !state[key];
+          el.classList.toggle('on', state[key]);
+          if (key === 'dualCanvas') {
+            renderKeySection();
+          }
+        });
+      }
+      bindSwitch('toggleLowLatency', 'lowLatency');
+      bindSwitch('toggleDualCanvas', 'dualCanvas');
+      bindSwitch('toggleReplay', 'autoReplay');
+
+      document.getElementById('btnExportObsJson').addEventListener('click', () => {
+        const profile = {
+          app: 'TIK DZ',
+          service: 'Custom RTMP',
+          server: state.rtmpUrl || 'rtmp://push-rtmp-f5.tiktok.com/live/',
+          video: {
+            orientation: state.orient,
+            resolution: summaryDimensions.textContent,
+            fps: state.fps,
+            bitrate_kbps: state.bitrate,
+            encoder: state.encoder,
+            keyframe_interval_sec: 2
+          },
+          audio: {
+            bitrate_kbps: state.audioBitrate
+          },
+          options: {
+            low_latency: state.lowLatency,
+            dual_canvas: state.dualCanvas
+          }
+        };
+        copyText(JSON.stringify(profile, null, 2), 'ملف إعدادات OBS (JSON)');
+      });
+
+      document.getElementById('btnCloseOauthModal').addEventListener('click', () => {
+        oauthModal.classList.add('hidden');
+        oauthModal.classList.remove('flex');
+      });
+
+      document.getElementById('btnConfirmSimOauth').addEventListener('click', () => {
+        const handle = document.getElementById('simUsername').value.trim() || '@tik_dz_creator';
+        state.isAuthenticated = true;
+        state.username = handle.startsWith('@') ? handle : '@' + handle;
+        oauthModal.classList.add('hidden');
+        oauthModal.classList.remove('flex');
+        renderAuth();
+        generateStreamCredentials();
+        showToast('تم تفويض الحساب وتوليد مفتاح البث');
+      });
+
+      document.getElementById('btnRealTikTokOauth').addEventListener('click', () => {
+        if (!state.devConfig.clientKey || !state.devConfig.redirectUri) {
+          oauthModal.classList.add('hidden');
+          oauthModal.classList.remove('flex');
+          openDevModal();
+          showToast('أدخل Client Key و Redirect URI أولاً');
+          return;
+        }
+        const csrfState = randomToken(16);
+        const authUrl = 'https://www.tiktok.com/v2/auth/authorize/?client_key=' +
+          encodeURIComponent(state.devConfig.clientKey) +
+          '&scope=user.info.basic&response_type=code&redirect_uri=' +
+          encodeURIComponent(state.devConfig.redirectUri) +
+          '&state=' + csrfState;
+        window.open(authUrl, '_blank', 'noopener,noreferrer');
+        showToast('تم فتح صفحة تفويض تيك توك الرسمية');
+      });
+
+      function openDevModal() {
+        document.getElementById('devClientKey').value = state.devConfig.clientKey || '';
+        document.getElementById('devRedirectUri').value = state.devConfig.redirectUri || '';
+        document.getElementById('devBackendEndpoint').value = state.devConfig.backendEndpoint || '';
+        devModal.classList.remove('hidden');
+        devModal.classList.add('flex');
+      }
+
+      document.getElementById('btnOpenDevSettings').addEventListener('click', openDevModal);
+
+      function closeDevModal() {
+        devModal.classList.add('hidden');
+        devModal.classList.remove('flex');
+      }
+      document.getElementById('btnCloseDevModal').addEventListener('click', closeDevModal);
+      document.getElementById('btnCancelDev').addEventListener('click', closeDevModal);
+
+      document.getElementById('btnSaveDev').addEventListener('click', () => {
+        state.devConfig.clientKey = document.getElementById('devClientKey').value.trim();
+        state.devConfig.redirectUri = document.getElementById('devRedirectUri').value.trim();
+        state.devConfig.backendEndpoint = document.getElementById('devBackendEndpoint').value.trim();
+        try {
+          localStorage.setItem('tikdz_dev_config', JSON.stringify(state.devConfig));
+        } catch (e) {}
+        closeDevModal();
+        showToast('تم حفظ إعدادات TikTok OAuth');
+      });
+
+      renderAuth();
+      renderKeySection();
+      renderSummary();
+    })();
+  </script>
+</body>
+</html>
