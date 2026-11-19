@@ -1,6 +1,0 @@
-on:
-  push:
-    paths:
-      - 'tik-dz-github.zip'
-      - '.github/workflows/unpack.yml'
-  workflow_dispatch:
